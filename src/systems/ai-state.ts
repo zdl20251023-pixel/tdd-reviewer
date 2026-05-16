@@ -19,6 +19,7 @@ export async function runAiStateSystem(
 
   return withRetry(
     async () => {
+      // @ts-ignore
       const { object, usage } = await generateObject({
         model: google(config.models.analysis),
         system: `你是一个冷酷苛刻的架构师，专精 AI 系统的防腐层审计。

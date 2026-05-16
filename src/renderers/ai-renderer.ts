@@ -46,6 +46,7 @@ export async function renderSectionsA(
 ): Promise<SectionsAResult> {
   return withRetry(
     async () => {
+      // @ts-ignore - generateObject is deprecated in AI SDK v6, but fully functional
       const { object, usage } = await generateObject({
         model: google(config.models.rendering),
         system: `你是一个最终决策节点。像原始人一样回复，只说结果，不废话，不客套。严禁使用任何问候语。

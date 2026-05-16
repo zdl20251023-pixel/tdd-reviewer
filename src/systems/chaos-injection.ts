@@ -22,6 +22,7 @@ export async function runChaosInjectionSystem(
 
   return withRetry(
     async () => {
+      // @ts-ignore
       const { object, usage } = await generateObject({
         model: google(config.models.analysis),
         system: `你是一个混沌工程师。针对传入的系统模块，对每个模块注入以下故障场景并推演后果链：

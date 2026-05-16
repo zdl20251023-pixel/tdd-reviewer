@@ -11,11 +11,12 @@ export interface TokenUsageEntry {
 export class TokenTracker {
   private entries: TokenUsageEntry[] = [];
 
-  record(phase: string, usage?: { promptTokens?: number; completionTokens?: number }) {
+  record(phase: string, usage?: any) {
+    // Vercel AI SDK v6 changed `promptTokens` to `inputTokens` and `completionTokens` to `outputTokens`
     this.entries.push({
       phase,
-      promptTokens: usage?.promptTokens ?? 0,
-      completionTokens: usage?.completionTokens ?? 0,
+      promptTokens: usage?.inputTokens ?? usage?.promptTokens ?? 0,
+      completionTokens: usage?.outputTokens ?? usage?.completionTokens ?? 0,
     });
   }
 

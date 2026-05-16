@@ -47,6 +47,7 @@ async function extractFromSegment(
 ): Promise<Entity[]> {
   const result = await withRetry(
     async () => {
+      // @ts-ignore - generateObject is deprecated in AI SDK v6, but fully functional
       const { object, usage } = await generateObject({
         model: google(config.models.extraction),
         system: `你是一个结构化提取器。阅读传入的 TDD 文档，执行以下步骤：

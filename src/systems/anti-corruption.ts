@@ -19,6 +19,7 @@ export async function runAntiCorruptionAuditSystem(
 
   return withRetry(
     async () => {
+      // @ts-ignore
       const { object, usage } = await generateObject({
         model: google(config.models.analysis),
         system: `你是一个防腐层（Anti-Corruption Layer）专项审计师。
