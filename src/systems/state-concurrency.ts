@@ -1,0 +1,40 @@
+import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
+import { z } from "zod";
+import { VulnerabilitySchema, type Entity, type Vulnerability } from "../schemas";
+import { config } from "../config";
+import { withRetry } from "../utils/retry";
+import type { TokenTracker } from "../utils/token-tracker";
+
+/** System 1: 状态竞态系统 — Query: state.involved && concurrency.involved */
+export async function runStateConcurrencySystem(
+  entities: Entity[],
+  tracker: TokenTracker
+): Promise<Vulnerability[]> {
+  const targets = entities.filter(
+    (e) => e.components.state.involved && e.components.concurrency.involved
+  );
+  if (targets.length === 0) return [];
+  console.log(`   -> [System:StateConcurrency] 命中 ${targets.length} 个实体`);
+
+  return withRetry(
+    async () => {
+      const { object, usage } = await generateObject({
+        model: google(config.models.analysis),
+        system: `你是一个冷酷苛刻的架构师，专精并发竞态分析。
+针对传入的模块（每个模块附带了原文摘录和详细的组件数据），寻找：
+- 基于其具体的共享资源和隔离机制，推演脏数据回流、竞态条件、死锁
+- 必须引用模块中的具体代码实体/接口名/变量名
+- 不要泛泛而谈，不要输出"可能存在竞态"这种废话
+严格以 P0/P1 级别输出。`,
+        prompt: JSON.stringify(targets, null, 2),
+        schema: z.object({ vulnerabilities: z.array(VulnerabilitySchema) }),
+      });
+      tracker.record("Phase2:StateConcurrency", usage);
+      return object.vulnerabilities;
+    },
+    "System:StateConcurrency",
+    config.retry.maxAttempts,
+    config.retry.backoffMs
+  );
+}
